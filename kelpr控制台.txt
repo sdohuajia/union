@@ -1,0 +1,68 @@
+(function() {
+    // 已点击的按钮集合，用于避免重复点击
+    const clickedButtons = new Set();
+    
+    // 创建计数器显示元素
+    function createCounterDisplay() {
+        const counterDiv = document.createElement('div');
+        counterDiv.id = 'button-click-counter';
+        counterDiv.style.position = 'fixed';
+        counterDiv.style.top = '10px';
+        counterDiv.style.right = '10px';
+        counterDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        counterDiv.style.color = '#ffffff';
+        counterDiv.style.padding = '8px 12px';
+        counterDiv.style.borderRadius = '4px';
+        counterDiv.style.fontSize = '14px';
+        counterDiv.style.fontWeight = 'bold';
+        counterDiv.style.zIndex = '9999';
+        counterDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        counterDiv.textContent = '已点击次数: 0';
+        document.body.appendChild(counterDiv);
+        return counterDiv;
+    }
+    
+    // 更新计数器显示
+    function updateCounter() {
+        const counter = document.getElementById('button-click-counter') || createCounterDisplay();
+        counter.textContent = `已点击次数: ${clickedButtons.size}`;
+    }
+
+    // 检查并点击按钮的函数
+    function checkAndClickButton() {
+        const buttons = Array.from(document.querySelectorAll('button.sc-cOFTSb.iuHbmd'));
+        const confirmButton = buttons.find(btn => ['确认', 'Approve'].includes(btn.textContent.trim()) && !clickedButtons.has(btn));
+
+        if (confirmButton) {
+            console.log('找到按钮:', confirmButton);
+            confirmButton.click();
+            console.log('已点击按钮:', confirmButton.textContent.trim());
+            clickedButtons.add(confirmButton); // 标记为已点击
+            updateCounter(); // 更新计数器显示
+        }
+    }
+
+    // 创建 MutationObserver 来监控 DOM 变化
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.addedNodes.length) {
+                checkAndClickButton();
+            }
+        });
+    });
+
+    // 创建计数器显示
+    createCounterDisplay();
+    
+    // 立即检查当前 DOM
+    checkAndClickButton();
+
+    // 开始监控 DOM 变化
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log('正在持续监控"确认"或"Approve"按钮...');
+
+    // 定时检查 DOM，确保不漏掉动态变化
+    setInterval(() => {
+        checkAndClickButton();
+    }, 1000); // 每 1 秒检查一次
+})();
