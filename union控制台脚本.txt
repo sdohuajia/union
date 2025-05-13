@@ -1,0 +1,79 @@
+// 等待元素出现的函数
+async function waitForElement(selector, text, timeout = 10000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+        const elements = Array.from(document.querySelectorAll(selector));
+        const element = elements.find(el => el.textContent.trim().toLowerCase().includes(text.toLowerCase()));
+        if (element) return element;
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    return null;
+}
+
+async function automateButtonClicks() {
+    while (true) {
+        try {
+            // Step 1: Try to find and click "Transfer ready" button
+            console.log('Scanning for Transfer ready button...');
+            let transferButton = await waitForElement('button[class*="bg-sky-600"][class*="inline-flex"]', 'Transfer ready', 5000);
+            if (transferButton) {
+                console.log('Found Transfer ready button with text:', transferButton.textContent);
+                transferButton.click();
+                console.log('Clicked Transfer ready button');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } else {
+                console.log('Transfer ready button not found, proceeding to Submit. Available buttons:', 
+                    Array.from(document.querySelectorAll('button')).map(btn => btn.textContent.trim()));
+            }
+
+            // Step 2: Find and click "Submit" button
+            console.log('Scanning for Submit button...');
+            let submitButton = await waitForElement('button[class*="bg-sky-600"][class*="inline-flex"]', 'Submit', 5000);
+            if (submitButton) {
+                console.log('Found Submit button with text:', submitButton.textContent);
+                submitButton.click();
+                console.log('Clicked Submit button');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } else {
+                console.log('Submit button not found, proceeding to wait. Available buttons:', 
+                    Array.from(document.querySelectorAll('button')).map(btn => btn.textContent.trim()));
+            }
+
+            // Step 3: Wait for 5 seconds
+            console.log('Waiting for 5 seconds...');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            console.log('Wait completed, proceeding to New transfer.');
+
+            // Step 4: Find and click "New transfer" button
+            console.log('Scanning for New transfer button...');
+            let newTransferButton = await waitForElement('button[class*="border-zinc-200"][class*="inline-flex"]', 'New transfer', 5000);
+            if (newTransferButton) {
+                console.log('Found New transfer button with text:', newTransferButton.textContent);
+                newTransferButton.click();
+                console.log('Clicked New transfer button');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } else {
+                console.log('New transfer button not found, checking for Try Again button...');
+                
+                // Step 5: Find and click "Try Again" button
+                console.log('Scanning for Try Again button...');
+                let tryAgainButton = await waitForElement('button[class*="bg-sky-600"][class*="inline-flex"]', 'Try Again', 5000);
+                if (tryAgainButton) {
+                    console.log('Found Try Again button with text:', tryAgainButton.textContent);
+                    tryAgainButton.click();
+                    console.log('Clicked Try Again button');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                } else {
+                    console.log('Try Again button not found, restarting loop. Available buttons:', 
+                        Array.from(document.querySelectorAll('button')).map(btn => btn.textContent.trim()));
+                }
+            }
+        } catch (err) {
+            console.error('Error in loop:', err);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+}
+
+// Run the script
+automateButtonClicks().catch(err => console.error('Script failed:', err));
